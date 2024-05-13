@@ -11,48 +11,89 @@ on:
     paths-ignore:
       - 'README.md'
 
-# Testing only needs permissions to read the repository contents.
-permissions:
-  contents: read
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+env:
+  GOPRIVATE: github.com/omc
 
 jobs:
   # Ensure project builds before running testing matrix
   build:
     name: Build
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      - uses: actions/checkout@v4.1.5
+      - uses: actions/setup-go@v5.0.1
         with:
           go-version-file: 'go.mod'
           cache: true
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: "3.x"
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4.1.5
+      - name: Add SSH Go Module Private Key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+      - name: Setup access for private go modules
+        run: |
+          git config --global url."ssh://git@github.com/".insteadOf https://github.com/
       - run: go mod download
-      - run: go build -v .
-      - name: Run linters
+      - name: Build
+        run: task build
+      - name: Run golangci-lint
         uses: golangci/golangci-lint-action@82d40c283aeb1f2b6595839195e95c2d6a49081b # v5.0.0
         with:
           version: latest
+      - name: Run additional linters
+        run: task lint
 
-  generate:
+  # source: https://github.com/vercel/terraform-provider-vercel
+  # source license: MPL-2.0
+  docs:
+    name: Docs Test
+    timeout-minutes: 5
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      - name: Set up Go
+        uses: actions/setup-go@v5.0.1
         with:
-          go-version-file: 'go.mod'
-          cache: true
-      # Temporarily download Terraform 1.8 prerelease for function documentation support.
-      # When Terraform 1.8.0 final is released, this can be removed.
-      - uses: hashicorp/setup-terraform@651471c36a6092792c552e8b1bef71e592b462d8 # v3.1.1
+          go-version: "1.22"
+        id: go
+      - name: Install Task
+        uses: arduino/setup-task@v2
         with:
-          terraform_version: '1.8.0-alpha20240216'
-          terraform_wrapper: false
-      - run: go generate ./...
-      - name: git diff
+          version: "3.x"
+      - name: Add SSH Go Module Private Key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
         run: |
-          git diff --compact-summary --exit-code || \
-            (echo; echo "Unexpected difference in directories after code generation. Run 'go generate ./...' command and commit."; exit 1)
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+      - name: Setup access for private go modules
+        run: |
+          git config --global url."ssh://git@github.com/".insteadOf https://github.com/
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4.1.5
+      - name: Check if docs are up-to-date
+        run: |
+          task docs
+          git diff
+          BADDOCS=$(git status --porcelain)
+          test -z "$BADDOCS" || (echo -e "documentation needs regenerating using task docs: $BADDOCS"; exit 1)
 
   # Run acceptance tests in a matrix with Terraform CLI versions
   test:
@@ -63,16 +104,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        opentofu:
+          - '1.6.*'
+          - '1.7.*'
         # list whatever Terraform versions here you would like to support
         terraform:
-          - '1.0.*'
-          - '1.1.*'
-          - '1.2.*'
-          - '1.3.*'
-          - '1.4.*'
+          - '1.7.*'
+          - '1.8.*'
     steps:
-      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
-      - uses: actions/setup-go@0c52d547c9bc32b1aa3301fd7a9cb496313a4491 # v5.0.0
+      - uses: actions/checkout@v4.1.5
+      - uses: actions/setup-go@v5.0.1
         with:
           go-version-file: 'go.mod'
           cache: true
@@ -80,6 +121,18 @@ jobs:
         with:
           terraform_version: ${{ matrix.terraform }}
           terraform_wrapper: false
+      - name: Add SSH Go Module Private Key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+      - name: Setup access for private go modules
+        run: |
+          git config --global url."ssh://git@github.com/".insteadOf https://github.com/
       - run: go mod download
       - env:
           TF_ACC: "1"

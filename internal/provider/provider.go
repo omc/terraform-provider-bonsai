@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/omc/bonsai-api-go/v2/bonsai"
+	"github.com/omc/terraform-provider-bonsai/internal/space"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
@@ -30,7 +31,7 @@ type bonsaiProvider struct {
 	version string
 }
 
-// hashicupsProviderModel maps provider schema data to a Go type.
+// bonsaiProviderModel maps provider schema data to a Go type.
 type bonsaiProviderModel struct {
 	APIKey   types.String `tfsdk:"api_key"`
 	APIToken types.String `tfsdk:"api_token"`
@@ -44,14 +45,29 @@ func (p *bonsaiProvider) Metadata(ctx context.Context, req provider.MetadataRequ
 // Schema defines the provider-level schema for configuration data.
 func (p *bonsaiProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
+		MarkdownDescription: "The Bonsai provider is used to create and manage resources on the Bonsai.io platform." + "\n" +
+			"To use the provider, you must provide both an API Access Key and Token, obtainable from within the " +
+			"[Bonsai.io](https://bonsai.io) management panel!",
 		Attributes: map[string]schema.Attribute{
 			"api_key": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
+				// First line is at the bullet-point, following must be indented
+				MarkdownDescription: "Bonsai.io API Access Key." + "\n\n" +
+					"   - If not set, terraform will look for the `BONSAI_API_KEY` " +
+					"   environment variable." + "\n\n" +
+					"   - Obtainable from within the management panel at " +
+					"   [Bonsai.io](https://bonsai.io)",
 			},
 			"api_token": schema.StringAttribute{
 				Optional:  true,
 				Sensitive: true,
+				// First line is at the bullet-point, following must be indented
+				MarkdownDescription: "Bonsai.io API Access Token." + "\n\n" +
+					"   - If not set, terraform will look for the `BONSAI_API_TOKEN` " +
+					"   environment variable." + "\n\n" +
+					"   - Obtainable from within the management panel at " +
+					"   [Bonsai.io](https://bonsai.io)",
 			},
 		},
 	}
@@ -62,7 +78,10 @@ func (p *bonsaiProvider) Resources(ctx context.Context) []func() resource.Resour
 }
 
 func (p *bonsaiProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{}
+	return []func() datasource.DataSource{
+		space.NewDataSource,
+		space.NewListDataSource,
+	}
 }
 
 func (p *bonsaiProvider) Functions(ctx context.Context) []func() function.Function {

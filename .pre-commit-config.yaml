@@ -7,4 +7,15 @@ repos:
     rev: v1.89.1 # Get the latest from: https://github.com/antonbabenko/pre-commit-terraform/releases
     hooks:
       - id: terraform_fmt
+        args: [ --hook-config=--parallelism-ci-cpu-cores=8 ]
       - id: terraform_docs
+  - repo: local
+    hooks:
+      - id: task-docs
+        name: task-docs
+        description: Run the docs task for documentation generation
+        entry: task docs
+        types: [ go ]
+        language: system
+        require_serial: true
+        pass_filenames: false
