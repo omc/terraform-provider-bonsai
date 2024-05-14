@@ -15,7 +15,7 @@ repos:
         name: task-docs
         description: Run the docs task for documentation generation
         entry: task docs
-        types: [ go ]
+        types_or: [ go, terraform, markdown ]
         language: system
         require_serial: true
         pass_filenames: false
