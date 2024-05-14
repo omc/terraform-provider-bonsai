@@ -55,9 +55,38 @@ jobs:
         uses: golangci/golangci-lint-action@82d40c283aeb1f2b6595839195e95c2d6a49081b # v5.0.0
         with:
           version: latest
-      - name: Run additional linters
-        run: task lint
 
+  flakey-lint:
+    name: Flakey Lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4.1.5
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version: '1.21.10'
+          cache: true
+      - name: Install Task
+        uses: arduino/setup-task@v2
+        with:
+          version: "3.x"
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v4.1.5
+      - name: Add SSH Go Module Private Key
+        env:
+          SSH_AUTH_SOCK: /tmp/ssh_agent.sock
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts
+          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+          ssh-add - <<< "${{ secrets.GO_MODULE_PRIVATE_KEY }}"
+          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK" >> $GITHUB_ENV
+      - name: Setup access for private go modules
+        run: |
+          git config --global url."ssh://git@github.com/".insteadOf https://github.com/
+      - run: go mod download
+      - name: Run additional linters - tfproviderlint is flakey on go >=1.22.0
+        run: task lint
   # source: https://github.com/vercel/terraform-provider-vercel
   # source license: MPL-2.0
   docs:
