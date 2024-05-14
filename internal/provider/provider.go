@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/omc/bonsai-api-go/v2/bonsai"
+	"github.com/omc/terraform-provider-bonsai/internal/release"
 	"github.com/omc/terraform-provider-bonsai/internal/space"
 )
 
@@ -82,6 +83,8 @@ func (p *bonsaiProvider) Resources(ctx context.Context) []func() resource.Resour
 
 func (p *bonsaiProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		release.NewDataSource,
+		release.NewListDataSource,
 		space.NewDataSource,
 		space.NewListDataSource,
 	}
