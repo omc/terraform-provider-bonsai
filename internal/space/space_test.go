@@ -8,13 +8,13 @@ import (
 )
 
 type SpaceTestSuite struct {
-	test.ProviderTestSuite
+	*test.ProviderTestSuite
 }
 
 func TestSpaceTestSuite(t *testing.T) {
-	suite.Run(t, &SpaceTestSuite{})
+	suite.Run(t, &SpaceTestSuite{ProviderTestSuite: &test.ProviderTestSuite{}})
 }
 
-func (s *SpaceTestSuite) SetupTest() {
-	suite.SetupAllSuite(s).SetupSuite()
+func (s *SpaceTestSuite) SetupSuite() {
+	suite.SetupAllSuite(s.ProviderTestSuite).SetupSuite()
 }

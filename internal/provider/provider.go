@@ -7,9 +7,6 @@ import (
 	"context"
 	"os"
 
-	"github.com/omc/bonsai-api-go/v2/bonsai"
-	"github.com/omc/terraform-provider-bonsai/internal/space"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/function"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/omc/bonsai-api-go/v2/bonsai"
+	"github.com/omc/terraform-provider-bonsai/internal/space"
 )
 
 // Ensure bonsaiProvider satisfies various provider interfaces.
@@ -29,6 +28,10 @@ type bonsaiProvider struct {
 	// provider is built and ran locally, and "test" when running acceptance
 	// testing.
 	version string
+	// bonsaiAPIClient is an optional override of the API Client used by
+	// Terraform to perform requests. Defaults to nil, and will use a
+	// default provided API Client.
+	bonsaiAPIClient *bonsai.Client
 }
 
 // bonsaiProviderModel maps provider schema data to a Go type.
@@ -88,17 +91,48 @@ func (p *bonsaiProvider) Functions(ctx context.Context) []func() function.Functi
 	return []func() function.Function{}
 }
 
-func New(version string) func() provider.Provider {
+// BonsaiProviderOption is a functional option, used to configure Client.
+type BonsaiProviderOption func(*bonsaiProvider)
+
+// WithAPIClient configures the Bonsai API Client used to perform
+// terraform action HTTP requests.
+func WithAPIClient(c *bonsai.Client) BonsaiProviderOption {
+	return func(p *bonsaiProvider) {
+		p.bonsaiAPIClient = c
+	}
+}
+
+func WithVersion(version string) BonsaiProviderOption {
+	return func(p *bonsaiProvider) {
+		p.version = version
+	}
+}
+
+func New(options ...BonsaiProviderOption) func() provider.Provider {
 	return func() provider.Provider {
-		return &bonsaiProvider{
-			version: version,
+		p := &bonsaiProvider{}
+
+		// apply options
+		for _, option := range options {
+			option(p)
 		}
+
+		return p
 	}
 }
 
 func (p *bonsaiProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
 	// Retrieve provider data from configuration
 	var config bonsaiProviderModel
+
+	// Bonsai API Client has already been configured; skip all client configuration
+	if p.bonsaiAPIClient != nil {
+		// Make the Bonsai client available during DataSource and Resource
+		// type Configure methods.
+		resp.DataSourceData = p.bonsaiAPIClient
+		resp.ResourceData = p.bonsaiAPIClient
+		return
+	}
 
 	diags := req.Config.Get(ctx, &config)
 	resp.Diagnostics.Append(diags...)
@@ -194,7 +228,7 @@ func (p *bonsaiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		return
 	}
 
-	// Create a new HashiCups client using the configuration values
+	// Create a new Bonsai client using the configuration values
 	client := bonsai.NewClient(
 		bonsai.WithCredentialPair(
 			bonsai.CredentialPair{
@@ -204,7 +238,7 @@ func (p *bonsaiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		),
 	)
 
-	// Make the HashiCups client available during DataSource and Resource
+	// Make the Bonsai client available during DataSource and Resource
 	// type Configure methods.
 	resp.DataSourceData = client
 	resp.ResourceData = client

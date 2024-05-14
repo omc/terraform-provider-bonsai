@@ -2,12 +2,11 @@ package space_test
 
 import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/omc/terraform-provider-bonsai/internal/test"
 )
 
 func (s *SpaceTestSuite) TestSpace_ListDataSource() {
 	resource.Test(s.T(), resource.TestCase{
-		ProtoV6ProviderFactories: test.ProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: s.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: `

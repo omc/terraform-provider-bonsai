@@ -4,13 +4,12 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/omc/terraform-provider-bonsai/internal/test"
 )
 
 func (s *SpaceTestSuite) TestSpace_DataSource() {
 	const spacePath = "omc/bonsai/eu-west-1/common"
 	resource.Test(s.T(), resource.TestCase{
-		ProtoV6ProviderFactories: test.ProtoV6ProviderFactories,
+		ProtoV6ProviderFactories: s.ProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
 				Config: fmt.Sprintf(`
