@@ -37,3 +37,18 @@ output "bonsai_release" {
 output "bonsai_releases" {
   value = data.bonsai_releases.list
 }
+
+// Bonsai Plans
+data "bonsai_plan" "get_by_slug" {
+  slug = "standard-micro-aws-us-east-1"
+}
+
+data "bonsai_plans" "list" {}
+
+output "bonsai_plan" {
+  value = data.bonsai_plan.get_by_slug
+}
+
+output "bonsai_plans" {
+  value = data.bonsai_plans.list
+}
