@@ -76,10 +76,16 @@ func convert(ctx context.Context, r bonsai.Plan) (model, error) {
 		Slug:                    types.StringValue(r.Slug),
 		PriceInCents:            types.Int64Value(r.PriceInCents),
 		BillingIntervalInMonths: types.Int64Value(int64(r.BillingIntervalInMonths)),
-		SingleTenant:            types.BoolValue(r.SingleTenant),
-		PrivateNetwork:          types.BoolValue(r.PrivateNetwork),
 		AvailableReleases:       types.ListNull(availableReleaseModel{}.ObjectType()),
 		AvailableSpaces:         types.ListNull(availableSpaceModel{}.ObjectType()),
+	}
+
+	if r.PrivateNetwork != nil {
+		m.PrivateNetwork = types.BoolValue(*r.PrivateNetwork)
+	}
+
+	if r.SingleTenant != nil {
+		m.SingleTenant = types.BoolValue(*r.SingleTenant)
 	}
 
 	if r.AvailableReleases != nil && len(r.AvailableReleases) > 0 {

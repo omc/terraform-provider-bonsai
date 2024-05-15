@@ -29,15 +29,20 @@ type model struct {
 }
 
 func convert(s bonsai.Space) model {
-	return model{
-		Path:           types.StringValue(s.Path),
-		PrivateNetwork: types.BoolValue(s.PrivateNetwork),
+	m := model{
+		Path: types.StringValue(s.Path),
 
 		Cloud: cloudProviderModel{
 			Provider: types.StringValue(s.Cloud.Provider),
 			Region:   types.StringValue(s.Cloud.Region),
 		},
 	}
+
+	if s.PrivateNetwork != nil {
+		m.PrivateNetwork = types.BoolValue(*s.PrivateNetwork)
+	}
+
+	return m
 }
 
 func schemaAttributes() map[string]dschema.Attribute {

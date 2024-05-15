@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/omc/bonsai-api-go/v2/bonsai"
+	"github.com/omc/terraform-provider-bonsai/internal/cluster"
 	"github.com/omc/terraform-provider-bonsai/internal/plan"
 	"github.com/omc/terraform-provider-bonsai/internal/release"
 	"github.com/omc/terraform-provider-bonsai/internal/space"
@@ -79,11 +80,15 @@ func (p *bonsaiProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 }
 
 func (p *bonsaiProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		cluster.NewResource,
+	}
 }
 
 func (p *bonsaiProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		cluster.NewDataSource,
+		cluster.NewListDataSource,
 		plan.NewDataSource,
 		plan.NewListDataSource,
 		release.NewDataSource,
@@ -133,7 +138,7 @@ func (p *bonsaiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 	// Bonsai API Client has already been configured; skip all client configuration
 	if p.bonsaiAPIClient != nil {
-		// Make the Bonsai client available during DataSource and Resource
+		// Make the Bonsai client available during DataSource and resource
 		// type Configure methods.
 		resp.DataSourceData = p.bonsaiAPIClient
 		resp.ResourceData = p.bonsaiAPIClient
@@ -244,7 +249,7 @@ func (p *bonsaiProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		),
 	)
 
-	// Make the Bonsai client available during DataSource and Resource
+	// Make the Bonsai client available during DataSource and resource
 	// type Configure methods.
 	resp.DataSourceData = client
 	resp.ResourceData = client
