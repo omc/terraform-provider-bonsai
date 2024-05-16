@@ -165,8 +165,8 @@ github.com/mitchellh/reflectwalk v1.0.2 h1:G2LzWKi524PWgd3mLHV8Y5k7s6XUvT0Gef6zx
 github.com/mitchellh/reflectwalk v1.0.2/go.mod h1:mSTlrgnPZtwu0c4WaC2kGObEpuNDbx0jmZXqmk4esnw=
 github.com/oklog/run v1.0.0 h1:Ru7dDtJNOyC66gQ5dQmaCa0qIsAUFY3sFpK1Xk8igrw=
 github.com/oklog/run v1.0.0/go.mod h1:dlhp/R75TPv97u0XWUtDeV/lRKWPKSdTuV0TZvrmrQA=
-github.com/omc/bonsai-api-go/v2 v2.3.0 h1:jMNgpBfPpHn8jT+cBDkdq5XIwjoeq5xC9065RA8E39c=
-github.com/omc/bonsai-api-go/v2 v2.3.0/go.mod h1:MzgltqMhte7wdoibEPFmV+BJOr4I+/7T2nM6QAv7Ktg=
+github.com/omc/bonsai-api-go/v2 v2.4.0 h1:mABKlKnHY+Wuk7j08/l4RIITAZkso9me85KDkwWWGQY=
+github.com/omc/bonsai-api-go/v2 v2.4.0/go.mod h1:MzgltqMhte7wdoibEPFmV+BJOr4I+/7T2nM6QAv7Ktg=
 github.com/pjbgf/sha1cd v0.3.0 h1:4D5XXmUUBUl/xQ6IjCkEAbqXskkq/4O7LmGn0AqMDs4=
 github.com/pjbgf/sha1cd v0.3.0/go.mod h1:nZ1rrWOcGJ5uZgEEVL1VUM9iRQiZvWdbZjkKyFzPPsI=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
