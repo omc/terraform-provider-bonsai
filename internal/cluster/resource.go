@@ -31,6 +31,29 @@ var (
 	updateRequestProcessingRegexp = regexp.MustCompile(`Your cluster is being updated`)
 )
 
+// resourceModel maps clusters schema data.
+type resourceModel struct {
+	// ID is a unique identifier, only set for terraform's management.
+	// For Cluster, this is set to the Slug.
+	ID types.String `tfsdk:"id"`
+
+	Name types.String `tfsdk:"name"`
+	Slug types.String `tfsdk:"slug"`
+	URI  types.String `tfsdk:"uri"`
+
+	// Message received during Cluster.Create
+	Message types.String `tfsdk:"message"`
+	// Monitor received during Cluster.Create
+	Monitor types.String `tfsdk:"monitor"`
+
+	Plan    planModel    `tfsdk:"plan"`
+	Release releaseModel `tfsdk:"release"`
+	Space   spaceModel   `tfsdk:"space"`
+	Stats   types.Object `tfsdk:"stats"`
+	Access  types.Object `tfsdk:"access"`
+	State   types.Object `tfsdk:"state"`
+}
+
 // dataSource is the data source implementation.
 type resource struct {
 	client *bonsai.ClusterClient
