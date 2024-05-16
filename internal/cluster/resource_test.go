@@ -161,11 +161,12 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
 				),
 			},
 			// Update testing
+			// Update name only
 			{
 				ResourceName: "bonsai_cluster.test",
 				Config: fmt.Sprintf(`
 			        resource "bonsai_cluster" "test" {
-			            name = "bonsai test cluster %s"
+                        name = "%s"
 
 			            plan = {
 							slug = "standard-nano-comped"
@@ -181,7 +182,56 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
 			        }
 			    `, clusterSuffix),
 				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("bonsai_cluster.test", "name", clusterSuffix),
+				),
+			},
+			// Update Plan only
+			{
+				ResourceName: "bonsai_cluster.test",
+				Config: fmt.Sprintf(`
+			        resource "bonsai_cluster" "test" {
+                        name = "%s"
+
+			            plan = {
+							slug = "sandbox"
+						}
+
+			            space = {
+							path = "omc/bonsai/us-east-1/common"
+						}
+
+			            release = {
+							slug = "opensearch-2.6.0-mt"
+						}
+			        }
+			    `, clusterSuffix),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr("bonsai_cluster.test", "plan.slug", "sandbox"),
+				),
+			},
+			// Update Plan and Name
+			{
+				ResourceName: "bonsai_cluster.test",
+				Config: fmt.Sprintf(`
+			        resource "bonsai_cluster" "test" {
+			            name = "bonsai test cluster %s"
+
+			            plan = {
+							slug = "sandbox"
+						}
+
+			            space = {
+							path = "omc/bonsai/us-east-1/common"
+						}
+
+			            release = {
+							slug = "opensearch-2.6.0-mt"
+						}
+			        }
+			    `, clusterSuffix),
+				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("bonsai_cluster.test", "name", fmt.Sprintf("bonsai test cluster %s", clusterSuffix)),
+					resource.TestCheckResourceAttr("bonsai_cluster.test", "plan.slug", "sandbox"),
 				),
 			},
 		},

@@ -25,6 +25,10 @@ var (
 	// Unavailable Regexp matches fields which are returned as not available
 	// during cluster provisioning.
 	unavailableRegexp = regexp.MustCompile(`.*?not available.*`)
+	// updateRequestProcessingRegexp matches a message response which
+	// indicates that the Cluster update request has been successfully
+	// received, and is currently processing.
+	updateRequestProcessingRegexp = regexp.MustCompile(`Your cluster is being updated`)
 )
 
 // dataSource is the data source implementation.
@@ -571,7 +575,8 @@ func (r *resource) Update(ctx context.Context, req tfrsc.UpdateRequest, resp *tf
 		Plan: desired.Plan.Slug.ValueString(),
 	}
 
-	_, err = r.client.Cluster.Update(ctx, state.Slug.ValueString(), updateOpts)
+	updateResp, err := r.client.Cluster.Update(ctx, state.Slug.ValueString(), updateOpts)
+	tflog.Info(ctx, fmt.Sprintf("received cluster update response: %v", updateResp))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
@@ -580,6 +585,19 @@ func (r *resource) Update(ctx context.Context, req tfrsc.UpdateRequest, resp *tf
 				updateOpts,
 			),
 			err.Error(),
+		)
+		return
+	}
+
+	if !updateRequestProcessingRegexp.MatchString(updateResp.Message) {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf(
+				"update: failed to update Cluster (%s) with desired state"+
+					" (%v) - update request message didn't indicate success.",
+				state.Slug.ValueString(),
+				updateOpts,
+			),
+			updateResp.Message,
 		)
 		return
 	}
@@ -602,6 +620,8 @@ UpdateLoop:
 			)
 			return
 		default:
+			// Sleep for a little bit; all of these should be refactored at some point
+			time.Sleep(refreshDelay)
 			refreshResult, err = r.client.Cluster.GetBySlug(ctx, state.Slug.ValueString())
 			if err != nil {
 				resp.Diagnostics.AddError(
@@ -615,15 +635,13 @@ UpdateLoop:
 				return
 			}
 
-			if desired.Name.ValueString() != "" && refreshResult.Name == desired.Name.ValueString() {
+			// If we're not updating the plan, and we've got the desired name,
+			// we're done!
+			if refreshResult.State != bonsai.ClusterStateUpdatingPlan &&
+				refreshResult.Name == desired.Name.ValueString() {
 				break UpdateLoop
 			}
 
-			if desired.Plan.Slug.ValueString() != "" && refreshResult.Plan.Slug == desired.Name.ValueString() {
-				break UpdateLoop
-			}
-			// Sleep for a little bit; all of these should be refactored at some point
-			time.Sleep(refreshDelay)
 			continue UpdateLoop
 		}
 	}
