@@ -372,7 +372,7 @@ func (r *resource) Create(ctx context.Context, req tfrsc.CreateRequest, resp *tf
 	}
 
 	createRequest := convertResourceClusterToCreateRequest(state)
-	tflog.Info(ctx, fmt.Sprintf("create request: %+v", createRequest))
+	tflog.Debug(ctx, fmt.Sprintf("create request: %+v", createRequest))
 
 	createResult, err := r.client.Cluster.Create(ctx, createRequest)
 	if err != nil {
@@ -380,10 +380,10 @@ func (r *resource) Create(ctx context.Context, req tfrsc.CreateRequest, resp *tf
 			fmt.Sprintf("Unable to Create Bonsai Cluster (%v) from the Bonsai API", state),
 			err.Error(),
 		)
-		tflog.Info(ctx, fmt.Sprintf("returning error %s", err.Error()))
+		tflog.Debug(ctx, fmt.Sprintf("returning error %s", err.Error()))
 		return
 	}
-	tflog.Info(ctx, fmt.Sprintf("received cluster %+v", createResult))
+	tflog.Debug(ctx, fmt.Sprintf("received cluster %+v", createResult))
 
 	// Handles null nested objects as well
 	createResultState, err = convertCreateResponseModelToResourceCluster(createResult)
@@ -419,9 +419,9 @@ DiscoveryLoop:
 		case <-refreshCtx.Done():
 			// On the event of time-out, set the state we *do* know.
 			diags = resp.State.Set(ctx, createResultState)
-			tflog.Info(ctx, fmt.Sprintf("context done - set cluster state %+v", createResultState))
+			tflog.Debug(ctx, fmt.Sprintf("context done - set cluster state %+v", createResultState))
 			resp.Diagnostics.Append(diags...)
-			tflog.Info(ctx, fmt.Sprintf("context done - appended diags %+v", createResultState))
+			tflog.Debug(ctx, fmt.Sprintf("context done - appended diags %+v", createResultState))
 
 			resp.Diagnostics.AddError(
 				fmt.Sprintf(
@@ -463,8 +463,8 @@ DiscoveryLoop:
 		}
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("received refreshed cluster: %+v", refreshResult))
-	tflog.Info(ctx, fmt.Sprintf("created cluster %+v", createResultState))
+	tflog.Debug(ctx, fmt.Sprintf("received refreshed cluster: %+v", refreshResult))
+	tflog.Debug(ctx, fmt.Sprintf("created cluster %+v", createResultState))
 
 	refreshState, err = resourceConvert(refreshResult)
 	if err != nil {
@@ -484,9 +484,9 @@ DiscoveryLoop:
 
 	diags = resp.State.Set(ctx, refreshState)
 
-	tflog.Info(ctx, fmt.Sprintf("set cluster state %+v", createResultState))
+	tflog.Debug(ctx, fmt.Sprintf("set cluster state %+v", createResultState))
 	resp.Diagnostics.Append(diags...)
-	tflog.Info(ctx, "appended diags after cluster state set")
+	tflog.Debug(ctx, "appended diags after cluster state set")
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -514,7 +514,7 @@ func (r *resource) Read(ctx context.Context, req tfrsc.ReadRequest, resp *tfrsc.
 	}
 
 	apiResp, err := r.client.Cluster.GetBySlug(ctx, state.ID.ValueString())
-	tflog.Info(ctx, fmt.Sprintf("received cluster %v", apiResp))
+	tflog.Debug(ctx, fmt.Sprintf("received cluster %v", apiResp))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Unable to Read Bonsai Cluster (%s) from the Bonsai API", state.Slug.ValueString()),
@@ -536,15 +536,15 @@ func (r *resource) Read(ctx context.Context, req tfrsc.ReadRequest, resp *tfrsc.
 	apiState.ID = state.ID
 	apiState.Access = state.Access
 
-	tflog.Info(ctx, fmt.Sprintf("read state %v", apiState))
+	tflog.Debug(ctx, fmt.Sprintf("read state %v", apiState))
 
 	diags = resp.State.Set(ctx, apiState)
-	tflog.Info(ctx, fmt.Sprintf("setting Read api state %v", apiState))
+	tflog.Debug(ctx, fmt.Sprintf("setting Read api state %v", apiState))
 	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	tflog.Info(ctx, "returning from read")
+	tflog.Debug(ctx, "returning from read")
 }
 
 // Update updates the Alias state.
@@ -576,7 +576,7 @@ func (r *resource) Update(ctx context.Context, req tfrsc.UpdateRequest, resp *tf
 	}
 
 	updateResp, err := r.client.Cluster.Update(ctx, state.Slug.ValueString(), updateOpts)
-	tflog.Info(ctx, fmt.Sprintf("received cluster update response: %v", updateResp))
+	tflog.Debug(ctx, fmt.Sprintf("received cluster update response: %v", updateResp))
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
@@ -646,7 +646,7 @@ UpdateLoop:
 		}
 	}
 
-	tflog.Info(ctx, fmt.Sprintf("update: received refreshed cluster: %+v", refreshResult))
+	tflog.Debug(ctx, fmt.Sprintf("update: received refreshed cluster: %+v", refreshResult))
 
 	refreshState, err = resourceConvert(refreshResult)
 	if err != nil {
@@ -709,7 +709,7 @@ RefreshLoop:
 			return
 		default:
 			result, err := r.client.Cluster.GetBySlug(ctx, state.Slug.ValueString())
-			tflog.Info(ctx, fmt.Sprintf("found cluster: %+v", result))
+			tflog.Debug(ctx, fmt.Sprintf("found cluster: %+v", result))
 			if err != nil {
 				if errors.Is(err, bonsai.ErrHTTPStatusNotFound) {
 					break RefreshLoop

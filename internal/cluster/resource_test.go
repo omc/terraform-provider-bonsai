@@ -15,19 +15,19 @@ import (
 
 func testClusterExists(resourceName string, client *bonsai.Client) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		tflog.Info(context.TODO(), fmt.Sprintf("testClusterExists: checking to see that the resource was created...%s", resourceName))
+		tflog.Debug(context.TODO(), fmt.Sprintf("testClusterExists: checking to see that the resource was created...%s", resourceName))
 
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("testClusterExists: not found: %s", resourceName)
 		}
 
-		tflog.Info(context.TODO(), fmt.Sprintf("testClusterExists: Working with terraform instance: %+v", rs.Primary))
+		tflog.Debug(context.TODO(), fmt.Sprintf("testClusterExists: Working with terraform instance: %+v", rs.Primary))
 		if rs.Primary.ID == "" {
 			return errors.New("no cluster ID is set")
 		}
 
-		tflog.Info(context.TODO(), fmt.Sprintf("testClusterExists: Fetching with primary terraform instance: %s", rs.Primary.ID))
+		tflog.Debug(context.TODO(), fmt.Sprintf("testClusterExists: Fetching with primary terraform instance: %s", rs.Primary.ID))
 		_, err := client.Cluster.GetBySlug(context.TODO(), rs.Primary.ID)
 		return err
 	}
@@ -35,7 +35,7 @@ func testClusterExists(resourceName string, client *bonsai.Client) resource.Test
 
 func testClusterDestroyed(resourceName string, client *bonsai.Client) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
-		tflog.Info(context.TODO(), fmt.Sprintf("Checking to see that the resource was destroyed...%s", resourceName))
+		tflog.Debug(context.TODO(), fmt.Sprintf("Checking to see that the resource was destroyed...%s", resourceName))
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {
 			return fmt.Errorf("not found: %s", resourceName)
@@ -44,7 +44,7 @@ func testClusterDestroyed(resourceName string, client *bonsai.Client) resource.T
 		if rs.Primary.ID == "" {
 			return errors.New("no cluster ID is set")
 		}
-		tflog.Info(context.TODO(), fmt.Sprintf("Working with terraform instance: %+v", rs.Primary))
+		tflog.Debug(context.TODO(), fmt.Sprintf("Working with terraform instance: %+v", rs.Primary))
 
 		result, err := client.Cluster.GetBySlug(context.TODO(), rs.Primary.ID)
 
