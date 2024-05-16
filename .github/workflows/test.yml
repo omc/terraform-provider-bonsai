@@ -132,6 +132,9 @@ jobs:
     timeout-minutes: 15
     strategy:
       fail-fast: false
+      # Current Bonsai dev account is limited to the number of sandbox items
+      # which can be created.
+      max-parallel: 1
       matrix:
         opentofu:
           - '1.6.*'
