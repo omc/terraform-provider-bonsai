@@ -23,13 +23,18 @@ type model struct {
 }
 
 func convert(r bonsai.Release) model {
-	return model{
+	m := model{
 		Name:        types.StringValue(r.Name),
 		Slug:        types.StringValue(r.Slug),
 		ServiceType: types.StringValue(r.ServiceType),
 		Version:     types.StringValue(r.Version),
-		MultiTenant: types.BoolValue(r.MultiTenant),
 	}
+
+	if r.MultiTenant != nil {
+		m.MultiTenant = types.BoolValue(*r.MultiTenant)
+	}
+
+	return m
 }
 
 func schemaAttributes() map[string]dschema.Attribute {

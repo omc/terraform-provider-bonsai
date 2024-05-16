@@ -52,3 +52,37 @@ output "bonsai_plan" {
 output "bonsai_plans" {
   value = data.bonsai_plans.list
 }
+
+// Bonsai Clusters
+data "bonsai_cluster" "get_by_slug" {
+  slug = "dcek-group-llc-5240651189"
+}
+
+data "bonsai_clusters" "list" {}
+
+output "bonsai_cluster" {
+  sensitive = true
+  value     = data.bonsai_cluster.get_by_slug
+}
+
+output "bonsai_clusters" {
+  sensitive = true
+  value     = data.bonsai_clusters.list
+}
+
+# Create a cluster
+resource "bonsai_cluster" "test" {
+  name = "complete example"
+
+  plan = {
+    slug = "standard-nano-comped"
+  }
+
+  space = {
+    path = "omc/bonsai/us-east-1/common"
+  }
+
+  release = {
+    slug = "opensearch-2.6.0-mt"
+  }
+}

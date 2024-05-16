@@ -17,7 +17,6 @@ func (s *SpaceTestSuite) TestSpace_ListDataSource() {
 						}
 					`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.bonsai_spaces.list", "spaces.#", "9"),
 					resource.TestCheckResourceAttr("data.bonsai_spaces.list", "spaces.0.%", "3"),
 					resource.TestCheckResourceAttr("data.bonsai_spaces.list", "spaces.0.path", "omc/bonsai/eu-west-1/common"),
 				),

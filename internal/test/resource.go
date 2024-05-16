@@ -1,7 +1,10 @@
 package test
 
 import (
+	"fmt"
+	"log"
 	"net/http/httptest"
+	"os"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
@@ -18,8 +21,8 @@ type ClientTestSuite struct {
 	// Suite is the testify/suite used for all HTTP request tests
 	suite.Suite
 
-	// client allows each test to have a reachable *bonsai.Client for testing
-	client *bonsai.Client
+	// Client allows each test to have a reachable *bonsai.Client for testing
+	Client *bonsai.Client
 
 	ProtoV6ProviderFactories map[string]func() (tfprotov6.ProviderServer, error)
 }
@@ -29,8 +32,47 @@ type ProviderTestSuite struct {
 	ClientTestSuite
 }
 
+const version = "0.1.0-test"
+
+var ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"bonsai": providerserver.NewProtocol6WithError(
+		provider.New(
+			provider.WithVersion(version),
+		)(),
+	),
+}
+
+func NewApiClient() *bonsai.Client {
+	envKey := os.Getenv("BONSAI_API_KEY")
+	envToken := os.Getenv("BONSAI_API_TOKEN")
+
+	accessKey, err := bonsai.NewAccessKey(envKey)
+	if err != nil {
+		log.Fatal(fmt.Errorf("invalid user received: %w", err))
+	}
+
+	accessToken, err := bonsai.NewAccessToken(envToken)
+	if err != nil {
+		log.Fatal(fmt.Errorf("invalid token/password received: %w", err))
+	}
+
+	return bonsai.NewClient(
+		bonsai.WithApplication(
+			bonsai.Application{
+				Name:    "terraform-provider-bonsai",
+				Version: version,
+			},
+		),
+		bonsai.WithCredentialPair(
+			bonsai.CredentialPair{
+				AccessKey:   accessKey,
+				AccessToken: accessToken,
+			},
+		),
+	)
+}
+
 func (s *ProviderTestSuite) SetupSuite() {
-	version := "0.1.0-test"
 
 	// configure terraform provider factory
 	s.ProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
@@ -40,6 +82,8 @@ func (s *ProviderTestSuite) SetupSuite() {
 			)(),
 		),
 	}
+
+	s.Client = NewApiClient()
 
 	// configure testify
 	s.Assertions = require.New(s.T())
@@ -60,7 +104,7 @@ func (s *ProviderMockRequestTestSuite) SetupSuite() {
 	// Configure http client and other miscellany
 	s.serveMux = chi.NewRouter()
 	s.server = httptest.NewServer(s.serveMux)
-	s.client = bonsai.NewClient(
+	s.Client = bonsai.NewClient(
 		bonsai.WithEndpoint(s.server.URL),
 		bonsai.WithApplication(
 			bonsai.Application{
@@ -81,7 +125,7 @@ func (s *ProviderMockRequestTestSuite) SetupSuite() {
 		"bonsai": providerserver.NewProtocol6WithError(
 			provider.New(
 				provider.WithAPIClient(
-					s.client,
+					s.Client,
 				),
 				provider.WithVersion(version),
 			)(),

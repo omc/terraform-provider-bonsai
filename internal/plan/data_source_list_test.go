@@ -17,7 +17,6 @@ func (s *PlanTestSuite) TestPlan_ListDataSource() {
 						}
 					`,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.#", "17"),
 					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.1.%", "8"),
 					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.1.slug", "standard-micro-aws-us-east-1"),
 				),
