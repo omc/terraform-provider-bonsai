@@ -5,14 +5,12 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"testing"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/omc/bonsai-api-go/v2/bonsai"
-	"github.com/omc/terraform-provider-bonsai/internal/test"
 )
 
 func testClusterExists(resourceName string, client *bonsai.Client) resource.TestCheckFunc {
@@ -62,13 +60,13 @@ func testClusterDestroyed(resourceName string, client *bonsai.Client) resource.T
 	}
 }
 
-func TestCluster_Resource(t *testing.T) {
+func (s *ClusterTestSuite) TestCluster_Resource() {
 	clusterSuffix := acctest.RandString(16)
 	clusterName := fmt.Sprintf("bonsai test %s", clusterSuffix)
 
-	resource.Test(t, resource.TestCase{
-		ProtoV6ProviderFactories: test.ProtoV6ProviderFactories,
-		CheckDestroy:             testClusterDestroyed("bonsai_cluster.test", test.NewApiClient()),
+	resource.Test(s.T(), resource.TestCase{
+		ProtoV6ProviderFactories: s.ProtoV6ProviderFactories,
+		CheckDestroy:             testClusterDestroyed("bonsai_cluster.test", s.Client),
 		Steps: []resource.TestStep{
 			{
 				ResourceName: "bonsai_cluster.test",
@@ -155,7 +153,7 @@ func TestCluster_Resource(t *testing.T) {
                     }
                 `, clusterName),
 				Check: resource.ComposeAggregateTestCheckFunc(
-					testClusterExists("bonsai_cluster.test", test.NewApiClient()),
+					testClusterExists("bonsai_cluster.test", s.Client),
 					resource.TestCheckResourceAttr("bonsai_cluster.test",
 						"name",
 						clusterName,
