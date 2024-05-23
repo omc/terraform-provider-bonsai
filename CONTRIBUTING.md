@@ -32,12 +32,17 @@ To compile the provider, run `go install`. This will build the provider and put 
 
 To generate or update documentation, run `go generate`.
 
-In order to run the full suite of Acceptance tests, run `make testacc`.
+In order to run the full suite of Acceptance tests, run the command below:
 
 *Note:* Acceptance tests create real resources, and often cost money to run.
 
 ```shell
-make testacc
+# Ensure these environment variables are set
+export TF_ACC: "1" # required to run acceptance tests
+export TF_LOG: "INFO" # set log level - optional
+export BONSAI_API_KEY="your_bonsai_api_key"
+export BONSAI_API_TOKEN="your_bonsai_api_token"
+go test -v -cover ./internal/...
 ```
 
 ### Pre-commit
