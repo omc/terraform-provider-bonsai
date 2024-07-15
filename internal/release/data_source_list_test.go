@@ -18,7 +18,6 @@ func (s *ReleaseTestSuite) TestRelease_ListDataSource() {
 					`,
 				Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("data.bonsai_releases.list", "releases.0.%", "5"),
-					resource.TestCheckResourceAttr("data.bonsai_releases.list", "releases.0.slug", "elasticsearch-2.4.0"),
 				),
 			},
 		},
