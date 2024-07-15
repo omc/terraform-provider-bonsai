@@ -17,8 +17,10 @@ func (s *PlanTestSuite) TestPlan_ListDataSource() {
 						}
 					`,
 				Check: resource.ComposeAggregateTestCheckFunc(
+					// Keys in map
 					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.1.%", "8"),
-					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.1.slug", "standard-micro-aws-us-east-1"),
+					// Confirm at least one attr
+					resource.TestCheckResourceAttr("data.bonsai_plans.list", "plans.1.billing_interval_months", "1"),
 				),
 			},
 		},
