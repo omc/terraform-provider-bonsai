@@ -97,7 +97,7 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
                         name = "never-created-test-cluster"
 
                         plan = { 
-							slug = "standard-nano-comped"
+							slug = "sandbox"
 						}
 
                         space = { 
@@ -118,7 +118,7 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
                         name = "never-created-test-cluster"
 
                         plan = { 
-							slug = "standard-nano-comped"
+							slug = "sandbox"
 						}
 
                         space = { 
@@ -140,7 +140,7 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
                         name = "%s"
 
                         plan = { 
-							slug = "standard-nano-comped"
+							slug = "admin-hobby"
 						}
 
                         space = { 
@@ -169,7 +169,7 @@ func (s *ClusterTestSuite) TestCluster_Resource() {
                         name = "%s"
 
 			            plan = {
-							slug = "standard-nano-comped"
+							slug = "admin-hobby"
 						}
 
 			            space = {

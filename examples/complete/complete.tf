@@ -40,7 +40,7 @@ output "bonsai_releases" {
 
 // Bonsai Plans
 data "bonsai_plan" "get_by_slug" {
-  slug = "standard-micro-aws-us-east-1"
+  slug = "sandbox"
 }
 
 data "bonsai_plans" "list" {}
@@ -75,7 +75,7 @@ resource "bonsai_cluster" "test" {
   name = "complete example"
 
   plan = {
-    slug = "standard-nano-comped"
+    slug = "sandbox"
   }
 
   space = {
