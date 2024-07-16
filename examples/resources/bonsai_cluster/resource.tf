@@ -2,7 +2,7 @@ resource "bonsai_cluster" "test" {
   name = "comped example"
 
   plan = {
-    slug = "standard-nano-comped"
+    slug = "sandbox"
   }
 
   space = {
