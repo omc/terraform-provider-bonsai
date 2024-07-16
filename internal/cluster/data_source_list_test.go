@@ -10,6 +10,22 @@ func (s *ClusterTestSuite) TestCluster_ListDataSource() {
 		Steps: []resource.TestStep{
 			{
 				Config: `
+						resource "bonsai_cluster" "test" {
+							name = "%s"
+
+							plan = {
+								slug = "sandbox"
+							}
+
+							space = {
+								path = "omc/bonsai/us-east-1/common"
+							}
+
+							release = {
+								slug = "opensearch-2.6.0-mt"
+							}
+						}
+
 						data "bonsai_clusters" "list" {}
 
 						output "bonsai_clusters" {
