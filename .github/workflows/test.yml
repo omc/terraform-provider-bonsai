@@ -89,51 +89,51 @@ jobs:
           test -z "$BADDOCS" || (echo -e "documentation needs regenerating using task docs: $BADDOCS"; exit 1)
 
   # Run acceptance tests in a matrix with Terraform CLI versions
-  # test:
-  #   name: Terraform Provider Acceptance Tests
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   timeout-minutes: 15
-  #   strategy:
-  #     fail-fast: false
-  #     # Current Bonsai dev account is limited to the number of sandbox items
-  #     # which can be created.
-  #     max-parallel: 1
-  #     matrix:
-  #       include:
-  #         - tool: opentofu
-  #           version: v1.6.x
-  #         - tool: opentofu
-  #           version: v1.7.x
-  #         - tool: terraform
-  #           version: v1.7.*
-  #         - tool: terraform
-  #           version: v1.8.*
-  #         - tool: terraform
-  #           version: v1.9.*
+  test:
+    name: Terraform Provider Acceptance Tests
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      # Current Bonsai dev account is limited to the number of sandbox items
+      # which can be created.
+      max-parallel: 1
+      matrix:
+        include:
+          - tool: opentofu
+            version: v1.6.x
+          - tool: opentofu
+            version: v1.7.x
+          - tool: terraform
+            version: v1.7.*
+          - tool: terraform
+            version: v1.8.*
+          - tool: terraform
+            version: v1.9.*
 
-  #   steps:
-  #     - uses: actions/checkout@v4.1.5
-  #     - uses: actions/setup-go@v5.0.1
-  #       with:
-  #         go-version-file: 'go.mod'
-  #         cache: true
-  #     - if: matrix.tool == 'terraform'
-  #       uses: hashicorp/setup-terraform@v3
-  #       with:
-  #         terraform_version: ${{ matrix.version }}
-  #         terraform_wrapper: false
+    steps:
+      - uses: actions/checkout@v4.1.5
+      - uses: actions/setup-go@v5.0.1
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - if: matrix.tool == 'terraform'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ matrix.version }}
+          terraform_wrapper: false
 
-  #     - if: matrix.tool == 'opentofu'
-  #       uses: opentofu/setup-opentofu@v1
-  #       with:
-  #         tofu_version: ${{ matrix.version }}
-  #         tofu_wrapper: false
-  #     - run: go mod download
-  #     - env:
-  #         TF_ACC: "1"
-  #         TF_LOG: "INFO"
-  #         BONSAI_API_KEY: ${{ secrets.BONSAI_API_KEY }}
-  #         BONSAI_API_TOKEN: ${{ secrets.BONSAI_API_TOKEN }}
-  #       run: go test -v -cover ./internal/...
-  #       timeout-minutes: 10
+      - if: matrix.tool == 'opentofu'
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: ${{ matrix.version }}
+          tofu_wrapper: false
+      - run: go mod download
+      - env:
+          TF_ACC: "1"
+          TF_LOG: "INFO"
+          BONSAI_API_KEY: ${{ secrets.BONSAI_API_KEY }}
+          BONSAI_API_TOKEN: ${{ secrets.BONSAI_API_TOKEN }}
+        run: go test -v -cover ./internal/...
+        timeout-minutes: 10
