@@ -90,7 +90,7 @@ tasks:
           cat << EOF > ~/.terraformrc
           provider_installation {
             dev_overrides {
-              "omc/bonsai" = "$(pwd)/dist/terraform-provider-vercel_{{ OS }}_{{ ARCH }}"
+              "omc/bonsai" = "$(pwd)/dist/terraform-provider-bonsai_{{ OS }}_{{ ARCH }}"
             }
             direct {}
           }

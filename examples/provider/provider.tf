@@ -1,7 +1,7 @@
 # Configure the Bonsai Provider using the required_providers stanza.
 terraform {
   required_providers {
-    vercel = {
+    bonsai = {
       source  = "omc/bonsai"
       version = "~> 1.0"
     }
