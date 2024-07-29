@@ -16,7 +16,7 @@ support of a search engineering team, but at a fraction of the cost!
 Details on usage can be found at:
 
 - [Markdown documentation](./docs/index.md)
-- [Provider documentation @ Terraform Registry](https://registry.terraform.io/providers/omc/terraform-provider-bonsai/latest/docs)
+- [Provider documentation @ Terraform Registry](https://registry.terraform.io/providers/omc/bonsai/latest/docs)
 - [Examples](./examples)
 
 ## Contributing
