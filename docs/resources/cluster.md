@@ -104,6 +104,9 @@ Optional:
 - `password` (String, Sensitive) Pass holds the password to access the cluster with. 
 
 Only shown once, during cluster creation.
+- `url` (String, Sensitive) URL is the Cluster endpoint for access.
+
+Only shown once, during cluster creation.
 - `user` (String, Sensitive) User holds the username to access the cluster with.
 
  Only shown once, during cluster creation.
@@ -113,9 +116,6 @@ Read-Only:
 - `host` (String) Host name of the cluster.
 - `port` (Number) HTTP Port the cluster is running on.
 - `scheme` (String) HTTP Scheme needed to access the cluster. Default: "https".
-- `url` (String) URL is the Cluster endpoint for access.
-
-Only shown once, during cluster creation.
 
 
 <a id="nestedatt--state"></a>

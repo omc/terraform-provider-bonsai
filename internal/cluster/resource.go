@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"regexp"
 	"time"
 
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/omc/bonsai-api-go/v2/bonsai"
 )
@@ -236,7 +238,9 @@ func resourceSchemaAttributes() map[string]rschema.Attribute {
 					MarkdownDescription: "URL is the Cluster endpoint for " +
 						"access.\n\n" +
 						"Only shown once, during cluster creation.",
-					Computed: true,
+					Sensitive: true,
+					Computed:  true,
+					Optional:  true,
 				},
 			},
 		},
@@ -501,7 +505,33 @@ DiscoveryLoop:
 		return
 	}
 	// Add credentials back to the refreshed state
-	refreshState.Access = createResultState.Access
+	refreshAccessModel := &accessModel{}
+	createAccessModel := &accessModel{}
+
+	tflog.Debug(ctx, "converting access as accessModel")
+	refreshState.Access.As(context.Background(), refreshAccessModel, basetypes.ObjectAsOptions{})
+	createResultState.Access.As(context.Background(), createAccessModel, basetypes.ObjectAsOptions{})
+
+	refreshAccessModel.Username = createAccessModel.Username
+	refreshAccessModel.Password = createAccessModel.Password
+
+	// Now, update the Refresh State's Access URL, with the full URI
+	accessUrl := url.URL{}
+	accessUrl.Host = refreshAccessModel.Host.ValueString()
+	accessUrl.Scheme = createAccessModel.Scheme.ValueString()
+	accessUrl.User = url.UserPassword(createAccessModel.Username.ValueString(), createAccessModel.Password.ValueString())
+	refreshAccessModel.URL = types.StringValue(accessUrl.String())
+
+	// Finally, we're ready to convert access back into an ObjectValue and update the refreshState object
+	tflog.Debug(ctx, "converting access back to ObjectValue")
+	access, diags := types.ObjectValueFrom(context.TODO(), accessModelTypes, &refreshAccessModel)
+	if diags.HasError() {
+		resp.Diagnostics.Append(diags...)
+		return
+	}
+	tflog.Debug(ctx, "Setting Access to access")
+	refreshState.Access = access
+
 	// And, set the unique identifier
 	refreshState.ID = createResultState.ID
 
