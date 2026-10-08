@@ -731,7 +731,11 @@ func (r *resource) Delete(ctx context.Context, req tfrsc.DeleteRequest, resp *tf
 		return
 	}
 
-	_, err := r.client.Cluster.Destroy(ctx, state.Slug.ValueString())
+	// The API refuses a delete unless the name matches the cluster's name
+	// exactly; Read refreshes state.Name from the API before a destroy.
+	_, err := r.client.Cluster.DestroyWithOpts(ctx, state.Slug.ValueString(), bonsai.ClusterDestroyOpts{
+		Name: state.Name.ValueString(),
+	})
 	if err != nil {
 		resp.Diagnostics.AddError(
 			fmt.Sprintf(
