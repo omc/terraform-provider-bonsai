@@ -148,6 +148,12 @@ jobs:
         uses: arduino/setup-task@v2
         with:
           version: "3.x"
+      # tfplugindocs uses a Terraform CLI from PATH. RunsOn's image has none, and
+      # tfplugindocs v0.16.0 cannot verify the one it downloads (expired PGP key).
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.9.*
+          terraform_wrapper: false
       - name: Check out code into the Go module directory
         uses: actions/checkout@v4.1.5
       - name: Check if docs are up-to-date
