@@ -88,7 +88,7 @@ func convert(ctx context.Context, r bonsai.Plan) (model, error) {
 		m.SingleTenant = types.BoolValue(*r.SingleTenant)
 	}
 
-	if r.AvailableReleases != nil && len(r.AvailableReleases) > 0 {
+	if len(r.AvailableReleases) > 0 {
 		availableReleases := make([]availableReleaseModel, len(r.AvailableReleases))
 		for i, release := range r.AvailableReleases {
 			availableReleases[i] = availableReleaseModel{Slug: types.StringValue(release.Slug)}
@@ -101,7 +101,7 @@ func convert(ctx context.Context, r bonsai.Plan) (model, error) {
 		m.AvailableReleases = tfAvailableReleases
 	}
 
-	if r.AvailableSpaces != nil && len(r.AvailableSpaces) > 0 {
+	if len(r.AvailableSpaces) > 0 {
 		availableSpaces := make([]availableSpaceModel, len(r.AvailableSpaces))
 		for i, space := range r.AvailableSpaces {
 			availableSpaces[i] = availableSpaceModel{Path: types.StringValue(space.Path)}
